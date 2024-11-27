@@ -1,45 +1,38 @@
 export class Exam {
-  constructor(professorAnswer, weight) {
-    this.professorAnswer = professorAnswer.values;
+  constructor(answer, weight) {
+    this.professorAnswer = answer.values;
     this.weight = weight;
-    this.students = [];
+    this.exams = [];
   }
 
-  add(studentAnswer) {
-    const score = this.calculateScore(studentAnswer.values);
-    this.students.push({ student: studentAnswer.student, score });
-  }
-
-  calculateScore(studentAnswers) {
-    let totalScore = 0;
-    for (const question in this.professorAnswer) {
-      if (this.professorAnswer[question] === studentAnswers[question]) {
-        totalScore += this.weight[question];
-      }
-    }
-    return totalScore;
+  add(exam) {
+    const { values } = exam;
+    const score = Object.keys(this.weight).reduce((total, question) => {
+      return total + (this.professorAnswer[question] === values[question] ? this.weight[question] : 0);
+    }, 0);
+    this.exams.push({ ...exam, score });
   }
 
   avg() {
-    const total = this.students.reduce((sum, student) => sum + student.score, 0);
-    return total / this.students.length;
+    const totalScore = this.exams.reduce((sum, exam) => sum + exam.score, 0);
+    return this.exams.length > 0 ? totalScore / this.exams.length : 0;
   }
 
-  min() {
-    const minScore = Math.min(...this.students.map(student => student.score));
-    return this.students.filter(student => student.score === minScore).map(student => student.score);
+  min(count = 1) {
+    const sortedScores = this.exams.map(e => e.score).sort((a, b) => a - b);
+    return sortedScores.slice(0, count);
   }
 
-  max() {
-    const maxScore = Math.max(...this.students.map(student => student.score));
-    return this.students.filter(student => student.score === maxScore).map(student => student.score);
+  max(count = 1) {
+    const sortedScores = this.exams.map(e => e.score).sort((a, b) => b - a);
+    return sortedScores.slice(0, count);
   }
 
-  lt(value) {
-    return this.students.filter(student => student.score < value).map(student => student.score);
+  lt(limit) {
+    return this.exams.map(e => e.score).filter(score => score < limit);
   }
 
-  gt(value) {
-    return this.students.filter(student => student.score > value).map(student => student.score);
+  gt(limit) {
+    return this.exams.map(e => e.score).filter(score => score > limit);
   }
 }
